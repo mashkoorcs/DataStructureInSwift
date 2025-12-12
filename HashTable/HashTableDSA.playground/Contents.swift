@@ -154,34 +154,74 @@ func isPAnagram(_ str: String) -> Bool {
  //Given an array nums containing n distinct numbers in the range [0, n], return the only number in the range that is missing from the array.
 
  
-func missingNumber(_ num: [Int]) -> Int {
-    let numSet = Set(num)
-    
-    for i in 0...num.count {
-        if numSet.contains(i) {
+func missingNumber(_ nums: [Int]) -> Int {
+    let numSet = Set(nums)
+    for i in 0...nums.count {
+        if !numSet.contains(i) {
             return i
         }
     }
-    
     return -1
+}
+
+//option 2
+
+func missingNumberSet(_ nums: [Int]) -> Int {
+    let n = nums.count
+    let fullSet = Set(0...n)
+    let numsSet = Set(nums)
+    return fullSet.subtracting(numsSet).first!
+}
+
+
+// option 3
+
+func missingNumber2(_ nums: [Int]) -> Int {
+    let n = nums.count
+    let expectedSum = n * (n + 1) / 2
+    let actualSum = nums.reduce(0, +)
+    return expectedSum - actualSum
+}
+
+//option 4
+func missingNumberXOR(_ nums: [Int]) -> Int {
+    var xorAll = 0
+    for i in 0...nums.count {
+        xorAll ^= i
+    }
+    for num in nums {
+        xorAll ^= num
+    }
+    return xorAll
+}
+
+
+// option 5
+
+func missingNumberXOROptimized(_ nums: [Int]) -> Int {
+    var xorAll = nums.count               // start with n
+    for i in 0..<nums.count {
+        xorAll ^= i ^ nums[i]
+    }
+    return xorAll
 }
 
   // Given an integer array arr, count how many elements x there are, such that x + 1 is also in arr. If there are duplicates in arr, count them separately.
 
-func NumberArray(_ num: [Int]) -> [Int] {
+func NumberArray(_ nums: [Int]) -> Int {
     
-    var arrSet = Set(num)
-    var arrX = [Int]()
-    for i in 0...num.count-1 {
+    var arrSet = Set(nums)
+    var count = 0
+    for num in nums {
         
-        let x = num[i] + 1
+      
         
-        if arrSet.contains(i) {
-            arrX.append(x)
+        if arrSet.contains(num+1) {
+           count += 1
         }
     }
     
-     return arrX
+     return count
     
 }
 
@@ -319,4 +359,119 @@ func areOccurrencesEqual(_ s: String) -> Bool {
 
 
 
+ //
 
+
+func findDuplicates(_ nums: [Int]) -> [Int] {
+    var numsSet = Set<Int>()
+    var ans: [Int] = []
+    
+    numsSet
+    
+    for num in nums {
+        if numsSet.contains(num+1) && numsSet.contains(num - 1) {
+            ans.append(num)
+        }
+    }
+    return ans
+}
+
+
+// nums = [[3,1,2,4,5],[1,2,3,4],[3,4,5,6]], return [3, 4]. 3 and 4 are the only numbers that are in all arrays.
+
+func freqArrays(_ nums: [[Int]]) -> [Int] {
+    
+    var numFreq : [Int:Int] = [:]
+    var ans : [Int] = []
+    
+    for num in nums {
+        for n in num {
+            numFreq[n, default: 0] += 1
+        }
+    }
+    
+    for key in numFreq.keys {
+        if numFreq[key] == nums.count {
+            ans.append(key)
+        }
+    }
+    return ans
+}
+
+
+
+func equalFrequency(_ str: String) -> Bool{
+    var freqDict : [Character:Int] = [:]
+    
+    for st in str {
+        freqDict[st,default: 0] += 1
+    }
+    
+    let valueArray = freqDict.values
+    
+    return Set(valueArray).count == 1 ? true : false
+}
+
+
+//Example Subarray Sum Equals K
+//Given an integer array nums and an integer k, find the number of subarrays whose sum is equal to k.
+
+func numofSubrrays(_ nums: [Int], _ k: Int) -> Int {
+    var count = 0
+    var prefixSum = 0
+    var freqPrefixSum : [Int:Int] = [0:1]
+    
+    for num in nums {
+        prefixSum += num
+        
+        if let freqCount = freqPrefixSum[prefixSum - k] {
+            count += prefixSum
+        }
+        freqPrefixSum[prefixSum, default: 0] += 1
+    }
+    return count
+}
+
+func subarraySumPositive(_ nums: [Int], _ k: Int) -> Int {
+        var left = 0
+        var currSum = 0
+        var count = 0
+        
+        for right in 0..<nums.count {
+            currSum += nums[right]
+            
+            // shrink window while sum is too big
+            while currSum > k && left <= right {
+                currSum -= nums[left]
+                left += 1
+            }
+            
+            // if window sum equals k, count it
+            if currSum == k {
+                count += 1
+            }
+        }
+        
+        return count
+    }
+
+
+func maxSubArrayLen(_ nums: [Int], _ k: Int) -> Int {
+    var maxlength = 0
+    var firstindex: [Int:Int] = [0:-1]
+    var prefixSum = 0
+    
+    for i in 0..<nums.count {
+          prefixSum += nums[i]
+        
+        if let prevIndex = firstindex[prefixSum-k] {
+            let length = i-prevIndex
+            maxlength = max(prevIndex,i)
+        }
+        
+        if firstindex[prefixSum] == nil {
+            firstindex[prefixSum] = i
+        }
+    }
+    return maxlength
+}

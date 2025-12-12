@@ -88,6 +88,10 @@ class LinkedListStack<T> {
 }
 
 
+
+// String questions involving stacks are popular. Normally, string questions that can utilize a stack will involve iterating over the string and putting characters into the stack, and comparing the top of the stack with the current character at each iteration. Stacks are useful for string matching because it saves a "history" of the previous characters
+
+
 // Given a string containing '(', ')', '{', '}', '[' and ']', check if it's valid (every open has matching close, correct order).
 
 func isValidParentheses(_ str: String) -> Bool {
@@ -141,7 +145,7 @@ func isBalanced(_ str: String) -> Bool {
 
     }
     
-    return stack.isEmpty ? true : false
+    return stack.isEmpty
 }
 
 
@@ -173,82 +177,66 @@ func removeconsecutiveDuplicates(_ str: String) -> String {
  
 func backSpaceCompare(_ str: String , _ tr: String) -> Bool {
     
-    var stack = [Character]()
     
-    func build(_ s: String) -> String{
+    // PROBLEM -- Evaluate expressions like ["2","1","+","3","*"] → (2 + 1) * 3 = 9
+    
+    func evalRPN(_ tokens: [String]) -> Int {
+        var stack = [Int]()
         
-        for c in s {
-            if c == "#"{
-                stack.popLast()
+        for token in tokens {
+            if let num = Int(token) {
+                stack.append(num)
             } else {
-                stack.append(c)
-            }
-            
-        }
-        return String(stack)
-    }
-    
-    return build(str) == build(tr)
-}
-
-// PROBLEM -- Evaluate expressions like ["2","1","+","3","*"] → (2 + 1) * 3 = 9
-
-func evalRPN(_ tokens: [String]) -> Int {
-    var stack = [Int]()
-    
-    for token in tokens {
-        if let num = Int(token) {
-            stack.append(num)
-        } else {
-            let second = stack.popLast()!
-            let first = stack.popLast()!
-            switch token {
+                let second = stack.popLast()!
+                let first = stack.popLast()!
+                switch token {
                 case "+": stack.append(first + second)
                 case "-": stack.append(first - second)
                 case "*": stack.append(first * second)
                 case "/": stack.append(first / second)
                 default: break
+                }
             }
         }
+        return stack[0]
     }
-    return stack[0]
+    return true
 }
-
-// You are given an absolute path for a Unix-style file system, which always begins with a slash '/'. Your task is to transform this absolute path into its simplified canonical path.
-
-//Example 1:
-//
-//Input: path = "/home/"
-//
-//Output: "/home"
-//
-//Explanation:
-//
-//The trailing slash should be removed.
-
-func simplifyPath(_ path: String) -> String {
-    var stack = [String]()
+    // You are given an absolute path for a Unix-style file system, which always begins with a slash '/'. Your task is to transform this absolute path into its simplified canonical path.
     
-    let components = path.split(separator: "/")
+    //Example 1:
+    //
+    //Input: path = "/home/"
+    //
+    //Output: "/home"
+    //
+    //Explanation:
+    //
+    //The trailing slash should be removed.
     
-    for component in components {
-        if component == "." {
-            continue
-        }
-        else if component == ".." {
-            if !stack.isEmpty {
-                stack.removeLast()
+    func simplifyPath(_ path: String) -> String {
+        var stack = [String]()
+        
+        let components = path.split(separator: "/")
+        
+        for component in components {
+            if component == "." {
+                continue
             }
-        } else {
-            stack.append(String(component))
+            else if component == ".." {
+                if !stack.isEmpty {
+                    stack.removeLast()
+                }
+            } else {
+                stack.append(String(component))
+            }
         }
+        return "/"+stack.joined(separator: "/")
     }
-    return "/"+stack.joined(separator: "/")
-}
-
-// shorter solution
-
-func simplifyPathShorter(_ path: String) -> String {
+    
+    // shorter solution
+    
+    func simplifyPathShorter(_ path: String) -> String {
         let stack = path.split(separator: "/").reduce(into: [String]()) { stack, component in
             if component == "." {
                 // Do nothing
@@ -261,12 +249,60 @@ func simplifyPathShorter(_ path: String) -> String {
         
         return "/" + stack.joined(separator: "/")
     }
+    
+    
+    // shortest solution
+    
+    func simplifyPathShortest(_ path: String) -> String {
+        "/" + path.split(separator: "/").reduce(into: [String]()) {
+            $1 == "." ? () : ($1 == ".." ? _ = $0.popLast() : $0.append(String($1)))
+        }.joined(separator: "/")
+    }
+    
+    
+    
+    
+    func isValidd(_ str: String) -> Bool {
+        var stack = [Character]()
+        
+        var matching : [Character:Character] = [")":")","[":"]","{":"}"]
+        
+        for s in str {
+            if matching.values.contains(s){
+                stack.append(s)
+            }
+            
+            if let matching = matching[s] {
+                if !stack.isEmpty || stack.popLast() != matching {
+                    return false
+                }
+            }
+        }
+        return stack.isEmpty
+    }
+    
 
 
-  // shortest solution
 
-func simplifyPathShortest(_ path: String) -> String {
-       "/" + path.split(separator: "/").reduce(into: [String]()) {
-           $1 == "." ? () : ($1 == ".." ? _ = $0.popLast() : $0.append(String($1)))
-       }.joined(separator: "/")
-   }
+// ------------------- MONOTONIC STACK -----------------------------------------------------------//
+
+func dailyTemprature(_ temprature: [Int]) -> [Int]
+{
+    let n = temprature.count
+    
+    var answer = Array(repeating: 0, count: n)
+    
+    var stack = [Int]()
+    
+    for i in 0..<n {
+        while let last = stack.last , temprature[i]>temprature[last] {
+            
+            stack.removeLast()
+            
+            answer[last] = i - last
+            
+        }
+        stack.append(i)
+    }
+    return answer
+}

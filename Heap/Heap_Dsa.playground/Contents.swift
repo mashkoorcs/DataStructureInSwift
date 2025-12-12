@@ -178,7 +178,6 @@ var greeting = "Hello, playground"
 
 
 
-
 import Foundation
 
 struct Heap<T> {
@@ -272,9 +271,9 @@ print(result) // Output: [1, 2]
 
 
 
-// Problem based on Heap
 
 // Problem 1 --   Last Stone Weight
+// Problem based on Heap
 //You are given an array of integers stones where stones[i] is the weight of the ith  stone. On each turn, we choose the heaviest two stones and smash them together. Suppose the heaviest two stones have weights x and y with x <= y. If x == y, then both stones are destroyed. If x != y, then x is destroyed and y loses x weight. Return the weight of the last remaining stone, or 0 if there are no stones left.
 
 
@@ -475,6 +474,21 @@ func minStoneSum(_ piles: [Int], _ k: Int) -> Int {
 }
 
 
+// other than heap solutions
+
+func minStoneSums(_ piles: [Int], _ k: Int) -> Int {
+    var piles = piles
+    
+    for _ in 0..<k {
+        piles.sort(by: >)               // sort descending
+        let largest = piles[0]
+        let remove = largest / 2        // floor division
+        piles[0] = largest - remove     // update pile
+    }
+    
+    return piles.reduce(0, +)
+}
+
 
 // HEAP PROBLEM
 
@@ -534,7 +548,7 @@ func minCostToConnectSticks(_ sticks: [Int]) -> Int {
 //Given an integer array nums and an integer k, return the k most frequent elements. It is guaranteed that the answer is unique.
 //please provide solution in swift
 
-func topKElements(_ nums:[Int],_ k: Int) -> [Int]{
+func topKElements(_ nums:[Int],_ k: Int) -> [Int]  {
     
     var frequencyMap: [Int: Int] = [:]
     
@@ -558,6 +572,41 @@ func topKElements(_ nums:[Int],_ k: Int) -> [Int]{
     return result
 }
 
+// using bucket solution
+
+class Solution11 {
+    func topKFrequent(_ nums: [Int], _ k: Int) -> [Int] {
+        // 1. Count frequency
+        var frequencyMap: [Int: Int] = [:]
+        for num in nums {
+            frequencyMap[num, default: 0] += 1
+        }
+
+        // 2. Create buckets, size = nums.count + 1
+        var buckets = Array(repeating: [Int](), count: nums.count + 1)
+        
+        for (num, freq) in frequencyMap {
+            buckets[freq].append(num)
+        }
+
+        // 3. Iterate from highest freq to lowest
+        var result: [Int] = []
+
+        for freq in stride(from: buckets.count - 1, through: 0, by: -1) {
+            if !buckets[freq].isEmpty {
+                result += buckets[freq]
+                if result.count == k {
+                    return result
+                }
+            }
+        }
+
+        return result
+    }
+}
+
+
+
 // Example usage:
 //let nums = [1,1,1,2,2,3]
 //let k = 2
@@ -565,9 +614,102 @@ func topKElements(_ nums:[Int],_ k: Int) -> [Int]{
 
 
 
+// Find K Closest Elements
+//
+//Given a sorted integer array arr, two integers k and x, return the k closest integers to x. The answer should also be sorted in ascending order. If there are ties, take the smaller elements.
+
+func findClosestElements(_ arr: [Int], _ k: Int, _ x: Int) -> [Int] {
+    // Max-heap:
+    // (distance, value) — element with *largest* distance is worst, so we remove it when heap exceeds k
+    var heap = Heap<(Int, Int)>(sort: { a, b in
+        if a.0 == b.0 { return a.1 > b.1 } // tie → bigger value is worse
+        return a.0 > b.0                  // larger distance is worse
+    })
+    
+    for num in arr {
+        let dist = abs(num - x)
+        heap.insert((dist, num))
+        
+        if heap.count > k {
+            _ = heap.remove()
+        }
+    }
+    
+    // Extract the `value` field and sort
+    let result = heap.elements.map { $0.1 }.sorted()
+    return result
+}
 
 
+//Given an integer array nums and an integer k, return the kth largest element in the array.
+//Note that it is the kth largest element in the sorted order, not the kth distinct element.
+//Can you solve it without sorting?
 
+func kthLargest(_ num: [Int],_ k: Int) -> Int {
+    var minHeap = Heap<(Int)>(sort: <)
+    
+    for n in num {
+        minHeap.insert(n)
+        if minHeap.count > k {
+            _ = minHeap.remove()
+        }
+    }
+    
+    return minHeap.elements.first ?? 0
+}
+
+
+//Given an array of points where points[i] = [xi, yi] represents a point on the X-Y plane and an integer k, return the k closest points to the origin (0, 0). The distance between two points on the X-Y plane is the Euclidean distance (i.e., √(x1 - x2)2 + (y1 - y2)2). You may return the answer in any order. The answer is guaranteed to be unique (except for the order that it is in).
+
+func kClosest(_ points: [[Int]], _ k: Int) -> [[Int]] {
+    // Max heap by distance: largest distance should be removed first
+    var heap = Heap<(Int, [Int])>(sort: { a, b in
+        return a.0 > b.0   // bigger distance is "worse"
+    })
+    
+    for point in points {
+        let x = point[0]
+        let y = point[1]
+        
+        // distance squared (no sqrt needed)
+        let dist = x * x + y * y
+        
+        heap.insert((dist, point))
+        
+        if heap.count > k {
+            _ = heap.remove() // remove farthest
+        }
+    }
+    
+    // Extract the points from heap
+    return heap.elements.map { $0.1 }
+}
+
+
+/* You are part of a university admissions office and need to keep track of the kth highest test score from applicants in real-time. This helps to determine cut-off marks for interviews and admissions dynamically as new applicants submit their scores. You are tasked to implement a class which, for a given integer k, maintains a stream of test scores and continuously returns the kth highest test score after a new score has been submitted. More specifically, we are looking for the kth highest score in the sorted list of all scores. Implement the KthLargest class: KthLargest(int k, int[] nums) Initializes the object with the integer k and the stream of test scores nums. int add(int val) Adds a new test score val to the stream and returns the element representing the kth largest element in the pool of test scores so far.*/
+
+
+class KthLargest {
+    private var k: Int
+    private var heap = Heap<Int>(sort: >)
+    
+    init(_ k: Int, _ nums: [Int]) {
+        self.k = k
+        
+        for num in nums {
+            add(num)
+        }
+    }
+    
+    @discardableResult
+    func add(_ val: Int) -> Int {
+        heap.insert(val)
+        if heap.count > k {
+            heap.remove()
+        }
+        return heap.peek()!
+    }
+}
 
 
 // To be understand Heap sort and Heapify
@@ -619,6 +761,7 @@ func heapSort(_ array: inout [Int]) {
         heapify(&array, i, 0)
     }
 }
+
 
 
 

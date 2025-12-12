@@ -204,3 +204,164 @@ func binarySearchCondition(_ low: Int, _ high: Int, condition: (Int) -> Bool) ->
 }
 
 
+//Example  Search a 2D Matrix
+//
+//Write an efficient algorithm that searches for a value target in an m x n integer matrix matrix. Integers in each row are sorted from left to right. The first integer of each row is greater than the last integer of the previous row.
+
+func searchMatrix(_ matrix: [[Int]], _ target: Int) -> Bool {
+    
+    let m = matrix.count
+    let n = matrix[0].count
+    
+    var left = 0 
+    var right = m*n-1
+    
+    while left <= right {
+        let mid = (left+right)/2
+        let row = mid/n
+        let col = mid%n
+        
+        let num = matrix[row][col]
+        
+        if num == target {
+            return true
+        }
+        if num < target {
+            left = mid + 1
+        } else {
+            right = mid-1
+        }
+    }
+    return false
+}
+
+
+// Example 3: 2300. Successful Pairs of Spells and Potions
+
+//You are given two positive integer arrays spells and potions, where spells[i] represents the strength of the ith
+//spell and potions[j] represents the strength of the jth potion. You are also given an integer success. A spell and potion pair is considered successful if the product of their strengths is at least success. For each spell, find how many potions it can pair with to be successful. Return an integer array where the ith element is the answer for the ith spell.
+
+func successFullPairs(_ spells: [Int],_ potions: [Int], _ success: Int) -> [Int] {
+    
+    func binarySearch(_ arr: [Int],_ target: Double) -> Int {
+        
+        var left = 0 
+        var right = arr.count
+        
+        while left < right {
+          let mid = (left+right)/2
+            if arr[mid] <= right {
+                right = mid
+            } else {
+                left = mid+1
+            }
+        }
+        return left
+    }
+    
+    
+    var sortedPotions = potions.sorted()
+    let m = potions.count
+    var result = [Int]()
+
+    for spell in spells {
+        
+        let target = Double(success)/Double(spell)
+        let idx = (binarySearch(sortedPotions, target))
+        result.append(m-idx)
+    }    
+    
+    return result
+}
+
+
+
+//Given a sorted array of distinct integers and a target value, return the index if the target is found. If not, return the index where it would be if it were inserted in order.
+
+func insertPosition(_ num: [Int], _ target: Int) -> Int {
+    
+    var left = 0 
+    var right = num.count
+    
+    while left < right {
+        let mid = (right+left)/2
+        
+        if num[mid] == target {
+            return mid
+        }
+        if num[mid]<target {
+            left = mid + 1
+        } else {
+            right = mid - 1
+        }
+    }
+
+    return left
+}
+
+
+//--------------------------on a solution space/answer ---------------------------------------------------------------------------------------------//
+
+
+// problem 1 :Koko loves to eat bananas. There are n piles of bananas, the ith pile has piles[i] bananas. Koko can decide her bananas-per-hour eating speed of k. Each hour, she chooses a pile and eats k bananas from that pile. If the pile has less than k bananas, she eats all of them and will not eat any more bananas during the hour. Return the minimum integer k such that she can eat all the bananas within h hours.
+
+
+func minEatingSpeed(_ piles: [Int], _ h: Int) -> Int {
+    
+    // Edge case
+           if piles.isEmpty { return 0 }
+    
+    func check(_ k: Int) -> Bool {
+        var hrs = 0 
+        for pile in piles {
+            hrs += Int(ceil(Double(pile)/Double(k)))
+        }
+            return hrs <= h
+    }
+    
+    var left = 0 
+    var right = piles.max()!
+    
+    while left <= right {
+       let mid = (left + right)/2
+        
+        if check(mid){
+            right = mid - 1
+        } else {
+            left = mid + 1
+        }
+    }
+    return left
+}
+
+
+func minTimeSpeet(_ dist: [Int], _ h: Double) -> Int {
+    
+    if dist.count > Int(ceil(h)){
+        return -1 
+    }
+    
+    func check(_ k: Int) -> Bool{
+        var t = 0.0
+        for dis in dist {
+            t =  ceil(Double(t))
+            t += Double(dis)/Double(t)
+        }
+        return t <= h
+    }
+    
+    var left = 1 
+    var right = 10_000_000
+    
+    while left <= right {
+        let mid = (left+right)/2
+        
+        if check(mid){
+            right = mid - 1
+        } else {
+            left = mid + 1
+        }
+        
+    }
+    return left
+}

@@ -177,6 +177,364 @@ linkedList.deleteLast()
 linkedList.printLinkedList()
 
 
+// More generic way for LinkedList
+/*
+ Step 1: Create the Node class
+ 
+ class Node<T> {
+     var value: T
+     var next: Node?
+
+     init(value: T) {
+         self.value = value
+         self.next = nil
+     }
+ }
+
+ Step 2: Create the LinkedList class
+ 
+ class LinkedList<T> {
+     private var head: Node<T>?
+
+     var isEmpty: Bool {
+         return head == nil
+     }
+
+     // Add new value at the end
+     func append(_ value: T) {
+         let newNode = Node(value: value)
+         if let lastNode = getLastNode() {
+             lastNode.next = newNode
+         } else {
+             head = newNode
+         }
+     }
+
+     // Helper function to find last node
+     private func getLastNode() -> Node<T>? {
+         var currentNode = head
+         while currentNode?.next != nil {
+             currentNode = currentNode?.next
+         }
+         return currentNode
+     }
+
+     // Print all elements
+     func printList() {
+         var currentNode = head
+         while let node = currentNode {
+             print(node.value, terminator: " -> ")
+             currentNode = node.next
+         }
+         print("nil")
+     }
+ 
+ // Insert at the beginning
+ func insertAtHead(_ value: T) {
+     let newNode = Node(value: value)
+     newNode.next = head
+     head = newNode
+ }
+
+ // 🗑 Delete a value
+ func delete(_ value: T) where T: Equatable {
+     var current = head
+     var previous: Node<T>?
+
+     while current != nil {
+         if current!.value == value {
+             if previous == nil {
+                 head = current!.next
+             } else {
+                 previous!.next = current!.next
+             }
+             return
+         }
+         previous = current
+         current = current!.next
+     }
+ }
+
+ func toArray() -> [T] {
+     var arr: [T] = []
+     var current = head
+     while let node = current {
+         arr.append(node.value)
+         current = node.next
+     }
+     return arr
+ }
+
+
+ }
+
+ Step 3: Try it out in a Swift Playground
+ let list = LinkedList<Int>()
+ list.append(10)
+ list.append(20)
+ list.append(30)
+
+ print("Linked List elements:")
+ list.printList()
+
+ */
+
+
+//Example: Using LinkedList as a Queue
+
+/*
+ class Queue<T> {
+     private var list = LinkedList<T>()
+
+     func enqueue(_ value: T) {
+         list.append(value)
+     }
+
+     func dequeue() -> T? {
+         let arr = list.toArray()
+         if let first = arr.first {
+             list.delete(first)
+             return first
+         }
+         return nil
+     }
+
+     func printQueue() {
+         list.printList()
+     }
+ }
+
+ */
+
+//🧠 What is a Doubly Linked List?
+//
+//A Doubly Linked List (DLL) is a data structure where each node has:
+//
+//A value
+//
+//A reference to the next node
+//
+//A reference to the previous node
+//
+//📈 This allows bidirectional traversal — forward and backward.
+
+class DoublyNode<T> {
+    var value: T
+    var next: DoublyNode?
+    weak var previous: DoublyNode?  // weak to avoid strong reference cycles
+
+    init(value: T) {
+        self.value = value
+    }
+}
+
+class DoublyLinkedList<T> {
+    private var head: DoublyNode<T>?
+    private var tail: DoublyNode<T>?
+
+    var isEmpty: Bool {
+        return head == nil
+    }
+
+    // Append value to the end
+    func append(_ value: T) {
+        let newNode = DoublyNode(value: value)
+        if let tailNode = tail {
+            tailNode.next = newNode
+            newNode.previous = tailNode
+        } else {
+            head = newNode
+        }
+        tail = newNode
+    }
+
+    // Insert value at the head
+    func insertAtHead(_ value: T) {
+        let newNode = DoublyNode(value: value)
+        if let headNode = head {
+            newNode.next = headNode
+            headNode.previous = newNode
+        } else {
+            tail = newNode
+        }
+        head = newNode
+    }
+
+    // Print list forward
+    func printForward() {
+        var current = head
+        while let node = current {
+            print(node.value, terminator: " <-> ")
+            current = node.next
+        }
+        print("nil")
+    }
+
+    // Print list backward
+    func printBackward() {
+        var current = tail
+        while let node = current {
+            print(node.value, terminator: " <-> ")
+            current = node.previous
+        }
+        print("nil")
+    }
+    
+    func toArray() -> [T] {
+        var arr: [T] = []
+        var current = head
+        while let node = current {
+            arr.append(node.value)
+            current = node.next
+        }
+        return arr
+    }
+
+}
+
+extension DoublyLinkedList where T: Equatable {
+    func delete(_ value: T) {
+        var current = head
+
+        while let node = current {
+            if node.value == value {
+                let prev = node.previous
+                let next = node.next
+
+                if let prev = prev {
+                    prev.next = next
+                } else {
+                    head = next  // deleting head
+                }
+
+                if let next = next {
+                    next.previous = prev
+                } else {
+                    tail = prev  // deleting tail
+                }
+
+                return
+            }
+            current = node.next
+        }
+    }
+}
+
+
+
+//LRU cache
+//🧱 Step 1: Create Node Class
+class CacheNode<Key: Hashable, Value> {
+    let key: Key
+    var value: Value
+    var next: CacheNode?
+    weak var previous: CacheNode?
+
+    init(key: Key, value: Value) {
+        self.key = key
+        self.value = value
+    }
+}
+
+//🧱 Step 2: Create Doubly Linked List Helper
+
+class DoublyLinkedListt<Key: Hashable, Value> {
+    private(set) var head: CacheNode<Key, Value>?
+    private(set) var tail: CacheNode<Key, Value>?
+
+    func insertAtHead(_ node: CacheNode<Key, Value>) {
+        node.next = head
+        node.previous = nil
+        head?.previous = node
+        head = node
+
+        if tail == nil {
+            tail = node
+        }
+    }
+
+    func moveToHead(_ node: CacheNode<Key, Value>) {
+        if head === node { return }
+
+        remove(node)
+        insertAtHead(node)
+    }
+
+    func remove(_ node: CacheNode<Key, Value>) {
+        let prev = node.previous
+        let next = node.next
+
+        if let prev = prev {
+            prev.next = next
+        } else {
+            head = next
+        }
+
+        if let next = next {
+            next.previous = prev
+        } else {
+            tail = prev
+        }
+
+        node.next = nil
+        node.previous = nil
+    }
+
+    func removeTail() -> CacheNode<Key, Value>? {
+        guard let tail = tail else { return nil }
+        remove(tail)
+        return tail
+    }
+}
+
+//⚙️ Step 3: Build the LRU Cache Class
+class LRUCache<Key: Hashable, Value> {
+    private var dict: [Key: CacheNode<Key, Value>] = [:]
+    private var list = DoublyLinkedListt<Key, Value>()
+    private let capacity: Int
+
+    init(capacity: Int) {
+        self.capacity = max(1, capacity)
+    }
+
+    func get(_ key: Key) -> Value? {
+        guard let node = dict[key] else {
+            return nil
+        }
+
+        // Move accessed node to head (most recent)
+        list.moveToHead(node)
+        return node.value
+    }
+
+    func put(_ key: Key, _ value: Value) {
+        if let node = dict[key] {
+            // Update value and move to head
+            node.value = value
+            list.moveToHead(node)
+        } else {
+            let newNode = CacheNode(key: key, value: value)
+            list.insertAtHead(newNode)
+            dict[key] = newNode
+
+            if dict.count > capacity {
+                if let removed = list.removeTail() {
+                    dict[removed.key] = nil
+                }
+            }
+        }
+    }
+
+    func printCacheOrder() {
+        var current = list.head
+        print("Cache state (most recent -> least): ", terminator: "")
+        while let node = current {
+            print("[\(node.key):\(node.value)]", terminator: " <-> ")
+            current = node.next
+        }
+        print("nil")
+    }
+}
 
 
 //Example 1: Given the head of a linked list with an odd number of nodes head, return the value of the node in the middle.
@@ -195,6 +553,34 @@ func findMiddle(_ head: Node?) -> Int {
     }
     return slow?.data ?? -1
     
+}
+
+//option2 - - iterative
+
+func getMiddle(_ head: Node?) -> Int {
+    guard var head = head else { return -1 }  // handle empty list
+    
+    var length = 0
+    var dummy = head
+    
+    // 1️⃣ Count length
+    while let _ = dummy.next {
+        length += 1
+        dummy = dummy.next!
+    }
+    
+    // Add 1 because loop counts edges, not nodes
+    length += 1
+    
+    // 2️⃣ Move head to middle
+    for _ in 0..<(length / 2) {
+        if let next = head.next {
+            head = next
+        }
+    }
+    
+    // 3️⃣ Return middle value
+    return head.data
 }
 
 
@@ -218,11 +604,11 @@ func findMiddle(_ head: Node?) -> Int {
 //
 //
 
-func hasCycle(_ head: Node?) -> Bool{
+func hasCycle(_ head: Node?) -> Bool {
     var fast = head
     var slow = head
     
-    while slow?.next != nil && fast?.next != nil {
+    while fast != nil && fast?.next != nil {
         
         slow = slow?.next
         fast = fast?.next?.next
@@ -322,7 +708,20 @@ func reversLinkedList(_ head: Node?) -> Node? {
     return prev
 }
 
+// recursive approach
 
+func reverseListRecursive(_ head: Node?) -> Node? {
+    // Base case: empty list or single node
+    guard let head = head, head.next != nil else {
+        return head
+    }
+    
+    let newHead = reverseListRecursive(head.next)
+    head.next?.next = head
+    head.next = nil
+    
+    return newHead
+}
 
 // swap node in parallel
 //Given the head of a linked list, swap every pair of nodes. For example, given a linked list 1 -> 2 -> 3 -> 4 -> 5 -> 6, return a linked list 2 -> 1 -> 4 -> 3 -> 6 -> 5.
@@ -401,3 +800,4 @@ func reverseBetween(_ head: Node?, _ left: Int, _ right: Int) -> Node? {
 
 
 
+//

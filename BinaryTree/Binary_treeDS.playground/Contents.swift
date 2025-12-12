@@ -21,6 +21,14 @@ root.right = TreeNode(3)
 root.left?.left = TreeNode(4)
 root.left?.right = TreeNode(5)
 
+/*
+                         1
+                        / \
+                       2   3
+                      / \   \
+                     4   5   6
+
+*/
 
 //Tree Traversals
 
@@ -106,7 +114,7 @@ func traverse(_ node: TreeNode?, level: Int, result: inout [[Int]]) {
 
 
 
- 
+//--Important Note : The recursive depth-first traversal is essentially the same as the solution using a stack, it's just that you're using the call stack as the stack for the algorithm.
 
 
 //Maximum Depth of Binary Tree
@@ -122,6 +130,28 @@ func maxDepth(_ root: TreeNode?) -> Int {
     let rightNode = maxDepth(root.right)
     
     return max(leftNode,rightNode) + 1
+}
+
+// recursive top down
+
+func maxDepthTopDown(_ root: TreeNode?) -> Int {
+    var result = 0
+
+    func helper(_ node: TreeNode?, _ depth: Int) {
+        guard let node = node else { return }
+
+        // If leaf node → update result
+        if node.left == nil && node.right == nil {
+            result = max(result, depth)
+        }
+
+        // Recurse deeper
+        helper(node.left, depth + 1)
+        helper(node.right, depth + 1)
+    }
+
+    helper(root, 1)
+    return result
 }
 
 //Solution 2: Iterative BFS (Level Order)
@@ -201,6 +231,26 @@ func hasPathSums(_ root: TreeNode?, _ targetSum: Int) -> Bool {
     }
 
     return dfs(root, 0)
+}
+
+// Recursive bottom up
+
+func pathSumBottomUp(_ node: TreeNode?) -> [Int] {
+    guard let node = node else { return [] }
+
+    if node.left == nil && node.right == nil {
+        return [node.value]
+    }
+
+    var sums: [Int] = []
+    for sum in pathSumBottomUp(node.left) {
+        sums.append(sum + node.value)
+    }
+    for sum in pathSumBottomUp(node.right) {
+        sums.append(sum + node.value)
+    }
+
+    return sums
 }
 
  
@@ -499,9 +549,9 @@ func minDepthBFS(_ root: TreeNode?) -> Int {
 
 
 
-//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------BFS-----------------------------------------------------------------------
 
-//---------------BFS Travesal ------
+                                               //---------------BFS Travesal -----------------------------------------------------------------------//
 
 func printAllNodes(_ root: TreeNode?) {
     guard let root = root else { return }
@@ -823,6 +873,14 @@ func zigzagLevelOrderDfs(_ root: TreeNode?) -> [[Int]] {
 
 //-----------------------------------BINARY SEARCH TREE ------------------------------------------------------------------------------//
 
+
+//A binary search tree (BST) is a type of binary tree. A BST has the following property:
+//
+//For each node, all values in its left subtree are less than the value in the node, and all values in its right subtree are greater than the value in the node.
+
+
+
+//Trivia to know: an inorder DFS traversal prioritizing left before right on a BST will handle the nodes in sorted order.
 
 
 
